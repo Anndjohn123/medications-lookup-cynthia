@@ -8,6 +8,30 @@ export interface Medication {
   sideEffects: string;
 }
 
+export interface FDADrugLabel {
+  genericName?: string;
+  brandName?: string[];
+  purpose?: string[];
+  indications?: string[];
+  dosage?: string[];
+  warnings?: string[];
+  adverseReactions?: string[];
+  drugInteractions?: string[];
+  activeIngredient?: string[];
+}
+
+export interface FDAAdverseEvent {
+  receiveDate?: string;
+  seriousness?: string;
+  patientReaction?: string[];
+}
+
+export interface FDAEnforcementReport {
+  drugName: string;
+  recalls: any[];
+  total: number;
+}
+
 export const medications: Medication[] = [
   {
     id: "lisinopril",

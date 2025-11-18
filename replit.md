@@ -77,3 +77,23 @@ Preferred communication style: Simple, everyday language.
 **Database Driver**: @neondatabase/serverless for PostgreSQL connectivity (configured but not yet actively used for medication data).
 
 **Session Management**: connect-pg-simple for PostgreSQL-backed session storage (configured but not actively used).
+
+### OpenFDA API Integration
+
+**Integration Date**: November 2024
+
+The application integrates with the OpenFDA API to provide access to official FDA drug data including drug labels, adverse event reports, and enforcement/recall information.
+
+**API Endpoints**:
+
+1. **Get Drug Label**: `/api/fda/drug-label/:drugName` - Retrieves official FDA drug label information for a specific medication
+2. **Get Adverse Events**: `/api/fda/adverse-events/:drugName` - Retrieves reported adverse events for a specific medication
+3. **Search Drug Labels**: `/api/fda/search/labels?q=<query>&limit=<number>` - Searches FDA drug labels database
+4. **Search Adverse Events**: `/api/fda/search/events?q=<query>&limit=<number>` - Searches FDA adverse events database
+5. **Get Enforcement/Recalls**: `/api/fda/enforcement/:drugName` - Retrieves FDA enforcement and recall information
+
+**Configuration**: The integration uses the `OPENFDA_API_KEY` environment variable for authenticated access to the FDA API. The API key is securely stored in Replit Secrets.
+
+**Service Module**: The `server/openfda-service.ts` module provides reusable functions for interacting with the FDA API, including error handling and data transformation.
+
+**Data Types**: TypeScript interfaces for FDA data are defined in `shared/medications.ts` including `FDADrugLabel`, `FDAAdverseEvent`, and `FDAEnforcementReport`.

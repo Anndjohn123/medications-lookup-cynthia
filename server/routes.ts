@@ -4,6 +4,14 @@ import { storage } from "./storage";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { 
+  getDrugLabelByName, 
+  getAdverseEventsByDrug, 
+  searchDrugLabel,
+  searchAdverseEvents,
+  searchDrugEnforcement,
+  ValidationError
+} from "./openfda-service";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -50,6 +58,103 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error reading medications CSV:", error);
       res.status(500).json({ error: "Failed to load medications" });
+    }
+  });
+
+  app.get("/api/fda/drug-label/:drugName", async (req, res) => {
+    try {
+      const { drugName } = req.params;
+      const label = await getDrugLabelByName(drugName);
+      
+      if (!label) {
+        return res.status(404).json({ error: "Drug label not found in FDA database" });
+      }
+      
+      res.json(label);
+    } catch (error) {
+      console.error("Error fetching FDA drug label:", error);
+      if (error instanceof ValidationError) {
+        return res.status(400).json({ error: error.message });
+      }
+      res.status(500).json({ error: "Failed to fetch drug label from FDA" });
+    }
+  });
+
+  app.get("/api/fda/adverse-events/:drugName", async (req, res) => {
+    try {
+      const { drugName } = req.params;
+      const events = await getAdverseEventsByDrug(drugName);
+      
+      res.json({ 
+        drugName,
+        totalEvents: events.length,
+        events 
+      });
+    } catch (error) {
+      console.error("Error fetching FDA adverse events:", error);
+      if (error instanceof ValidationError) {
+        return res.status(400).json({ error: error.message });
+      }
+      res.status(500).json({ error: "Failed to fetch adverse events from FDA" });
+    }
+  });
+
+  app.get("/api/fda/search/labels", async (req, res) => {
+    try {
+      const { q, limit = "5" } = req.query;
+      
+      if (!q || typeof q !== "string") {
+        return res.status(400).json({ error: "Query parameter 'q' is required" });
+      }
+      
+      const parsedLimit = parseInt(limit as string);
+      const results = await searchDrugLabel(q, parsedLimit);
+      res.json(results);
+    } catch (error) {
+      console.error("Error searching FDA drug labels:", error);
+      if (error instanceof ValidationError) {
+        return res.status(400).json({ error: error.message });
+      }
+      res.status(500).json({ error: "Failed to search drug labels" });
+    }
+  });
+
+  app.get("/api/fda/search/events", async (req, res) => {
+    try {
+      const { q, limit = "10" } = req.query;
+      
+      if (!q || typeof q !== "string") {
+        return res.status(400).json({ error: "Query parameter 'q' is required" });
+      }
+      
+      const parsedLimit = parseInt(limit as string);
+      const results = await searchAdverseEvents(q, parsedLimit);
+      res.json(results);
+    } catch (error) {
+      console.error("Error searching FDA adverse events:", error);
+      if (error instanceof ValidationError) {
+        return res.status(400).json({ error: error.message });
+      }
+      res.status(500).json({ error: "Failed to search adverse events" });
+    }
+  });
+
+  app.get("/api/fda/enforcement/:drugName", async (req, res) => {
+    try {
+      const { drugName } = req.params;
+      const results = await searchDrugEnforcement(drugName, 5);
+      
+      res.json({
+        drugName,
+        recalls: results.results || [],
+        total: results.meta?.results?.total || 0
+      });
+    } catch (error) {
+      console.error("Error fetching FDA enforcement data:", error);
+      if (error instanceof ValidationError) {
+        return res.status(400).json({ error: error.message });
+      }
+      res.status(500).json({ error: "Failed to fetch enforcement data from FDA" });
     }
   });
 
