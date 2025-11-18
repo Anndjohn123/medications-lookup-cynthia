@@ -1,14 +1,18 @@
 import { useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import SearchBar from "@/components/SearchBar";
 import MedicationCard from "@/components/MedicationCard";
 import SearchResults from "@/components/SearchResults";
 import EmptyState from "@/components/EmptyState";
-import { medications } from "@shared/medications";
 import type { Medication } from "@shared/medications";
 
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMedication, setSelectedMedication] = useState<Medication | null>(null);
+
+  const { data: medications = [], isLoading } = useQuery<Medication[]>({
+    queryKey: ["/api/medications"],
+  });
 
   const searchResults = useMemo(() => {
     if (!searchQuery.trim()) return [];
@@ -18,7 +22,7 @@ export default function Home() {
       med.genericName.toLowerCase().includes(query) ||
       med.brandNames.toLowerCase().includes(query)
     );
-  }, [searchQuery]);
+  }, [searchQuery, medications]);
 
   const handleSearchAgain = () => {
     setSelectedMedication(null);
@@ -32,6 +36,18 @@ export default function Home() {
 
   const showEmptyState = searchQuery.trim() && searchResults.length === 0;
   const showResults = searchQuery.trim() && searchResults.length > 0 && !selectedMedication;
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="animate-pulse text-2xl font-semibold text-muted-foreground">
+            Loading medications...
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">

@@ -20,7 +20,7 @@ export default function SearchResults({ results, onSelect }: SearchResultsProps)
             key={medication.id}
             variant="outline"
             onClick={() => onSelect(medication)}
-            className="h-auto py-4 px-4 justify-start text-left hover-elevate"
+            className="min-h-12 h-auto py-4 px-4 justify-start text-left hover-elevate"
             data-testid={`button-result-${medication.id}`}
           >
             <div className="space-y-1 w-full">

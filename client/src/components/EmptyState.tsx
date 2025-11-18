@@ -34,7 +34,7 @@ export default function EmptyState({
             key={med.id}
             variant="outline"
             onClick={() => onMedicationClick(med)}
-            className="h-auto py-3 px-4 justify-start text-left hover-elevate"
+            className="min-h-12 h-auto py-3 px-4 justify-start text-left hover-elevate"
             data-testid={`button-medication-${med.id}`}
           >
             <div className="space-y-0.5">
